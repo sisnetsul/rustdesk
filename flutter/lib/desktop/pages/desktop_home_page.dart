@@ -113,6 +113,35 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     ];
     if (isIncomingOnly) {
       children.addAll([
+        Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 4, bottom: 2),
+          child: Text(
+            'A sessão encerra sozinha e o atendimento fica registrado (LGPD).',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+                fontSize: 11,
+                color: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.color
+                    ?.withOpacity(0.55)),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 6),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Clipboard.setData(
+                    ClipboardData(text: gFFI.serverModel.serverId.text));
+                showToast('Código copiado');
+              },
+              icon: const Icon(Icons.copy, size: 16),
+              label: const Text('Copiar meu código'),
+            ),
+          ),
+        ),
         Divider(),
         OnlineStatusWidget(
           onSvcStatusChanged: () {
@@ -129,7 +158,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     return ChangeNotifierProvider.value(
       value: gFFI.serverModel,
       child: Container(
-        width: isIncomingOnly ? 280.0 : 200.0,
+        width: isIncomingOnly ? 420.0 : 200.0,
         color: Theme.of(context).colorScheme.background,
         child: Stack(
           children: [
@@ -211,7 +240,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          translate("ID"),
+                          'SEU CÓDIGO DE ATENDIMENTO',
                           style: TextStyle(
                               fontSize: 14,
                               color: Theme.of(context)
@@ -239,7 +268,9 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                           contentPadding: EdgeInsets.only(top: 10, bottom: 10),
                         ),
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1.2,
                         ),
                       ).workaroundFreezeLinuxMint(),
                     ),
@@ -312,7 +343,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AutoSizeText(
-                    translate("One-time Password"),
+                    'SENHA TEMPORÁRIA',
                     style: TextStyle(
                         fontSize: 14, color: textColor?.withOpacity(0.5)),
                     maxLines: 1,
@@ -336,7 +367,10 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                               contentPadding:
                                   EdgeInsets.only(top: 14, bottom: 10),
                             ),
-                            style: TextStyle(fontSize: 15),
+                            style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 1.2),
                           ).workaroundFreezeLinuxMint(),
                         ),
                       ),
