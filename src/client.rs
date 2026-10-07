@@ -421,7 +421,9 @@ impl Client {
         (i32, String),
         bool,
     )> {
-        if config::is_incoming_only() && !is_switch_sides_back(conn_type, &interface).await {
+        if (crate::sisnetsul::receive_only() || config::is_incoming_only())
+            && !is_switch_sides_back(conn_type, &interface).await
+        {
             bail!("Incoming only mode");
         }
         // to-do: remember the port for each peer, so that we can retry easier
@@ -4665,7 +4667,7 @@ pub async fn handle_hash(
         }
         // Incoming-only may connect out solely for a verified switch-back;
         // never fall through to password login, including on repeated hashes.
-        if config::is_incoming_only() {
+        if crate::sisnetsul::receive_only() || config::is_incoming_only() {
             interface.msgbox("error", "Connection Error", "Incoming only mode", "");
             let mut misc = Misc::new();
             misc.set_close_reason(

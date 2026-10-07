@@ -1,0 +1,19 @@
+{
+  "_comment": "Sisnetsul - defaults do cliente entregue ao cliente final. Vazio = ignorado.",
+  "custom-rendezvous-server": "suporte.sisnetsul.com.br",
+  "key": "YqI6Z3V8PfbderSR4+zpGiq6LvA8ZJUpH+CYy4Bkd5I=",
+  "api-server": "https://suporte.sisnetsul.com.br",
+  "relay-server": "suporte.sisnetsul.com.br",
+  "hide-server-settings": "Y",
+  "hide-security-settings": "Y",
+  "hide-network-settings": "Y",
+  "hide-general-settings": "Y",
+  "hide-proxy-settings": "Y",
+  "hide-websocket-settings": "Y",
+  "hide-stop-service": "Y",
+  "disable-change-id": "Y",
+  "disable-change-permanent-password": "Y",
+  "enable-check-update": "N",
+  "id-whitelist": "",
+  "whitelist": ""
+}

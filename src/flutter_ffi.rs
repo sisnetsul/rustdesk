@@ -51,6 +51,8 @@ fn initialize(app_dir: &str, custom_client_config: &str) {
     } else {
         crate::read_custom_client(custom_client_config);
     }
+    // Sisnetsul: defaults/travas do cliente entregue ao cliente final
+    crate::sisnetsul::apply_defaults();
     #[cfg(target_os = "android")]
     {
         // flexi_logger can't work when android_logger initialized.
@@ -2505,7 +2507,7 @@ pub fn main_support_remove_wallpaper() -> bool {
 }
 
 pub fn is_incoming_only() -> SyncReturn<bool> {
-    SyncReturn(config::is_incoming_only())
+    SyncReturn(crate::sisnetsul::receive_only() || config::is_incoming_only())
 }
 
 pub fn is_outgoing_only() -> SyncReturn<bool> {
