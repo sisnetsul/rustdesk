@@ -9,7 +9,7 @@
 //! O build interno da equipe (suporte) usa o mesmo codigo com `RECEIVE_ONLY = false`
 //! em outra branch/const.
 
-use hbb_common::config;
+use hbb_common::{config, log};
 use std::collections::HashMap;
 
 /// `true` = cliente "receber atendimento apenas" (bloqueia o cliente de iniciar conexao).
