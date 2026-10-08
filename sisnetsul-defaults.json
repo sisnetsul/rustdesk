@@ -13,6 +13,7 @@
   "hide-stop-service": "Y",
   "disable-change-id": "Y",
   "disable-change-permanent-password": "Y",
+  "approve-mode": "password-click",
   "enable-check-update": "N",
   "id-whitelist": "",
   "whitelist": ""

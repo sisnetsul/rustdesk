@@ -1336,7 +1336,10 @@ class _SisnetApproveCheckboxState extends State<_SisnetApproveCheckbox> {
 
   @override
   Widget build(BuildContext context) {
-    final m = gFFI.serverModel.approveMode;
+    // Cliente custom: o padrao efetivo e 'password-click' (aprovacao na tela),
+    // mas o valor bruto da opcao pode estar vazio -> usar o fallback do tema.
+    final bruto = gFFI.serverModel.approveMode;
+    final m = bruto.isEmpty ? defaultOptionApproveMode : bruto;
     _on ??= (m == 'click' || m == 'password-click');
     return InkWell(
       onTap: () => _toggle(!(_on ?? false)),
