@@ -1391,7 +1391,9 @@ pub fn main_clip_cursor(
 }
 
 pub fn main_get_my_id() -> String {
-    get_id()
+    let v = get_id();
+    log::info!("[anet-diag] FFI main_get_my_id -> len={}", v.len());
+    v
 }
 
 pub fn main_get_uuid() -> String {
@@ -1801,7 +1803,9 @@ pub fn main_get_langs() -> String {
 }
 
 pub fn main_get_temporary_password() -> String {
-    ui_interface::temporary_password()
+    let v = ui_interface::temporary_password();
+    log::info!("[anet-diag] FFI main_get_temporary_password -> len={}", v.len());
+    v
 }
 
 pub fn main_set_permanent_password_with_result(password: String) -> bool {
