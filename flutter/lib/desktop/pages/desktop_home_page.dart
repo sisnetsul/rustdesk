@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_hbb/anet_diag.dart';
 import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/common/widgets/animated_rotation_widget.dart';
 import 'package:flutter_hbb/common/widgets/custom_password.dart';
@@ -891,6 +892,8 @@ class _DesktopHomePageState extends State<DesktopHomePage>
 
   Widget buildSisnetClientPane(BuildContext context) {
     final model = gFFI.serverModel;
+    anetDiag(
+        'PANE-BUILD id=[${model.serverId.text}] idLen=${model.serverId.text.length} pwdLen=${model.serverPasswd.text.length}');
     return SingleChildScrollView(
       controller: _leftPaneScrollController,
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
@@ -1061,25 +1064,32 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   Widget _sBigValue(TextEditingController c, double size) {
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: c,
-      builder: (_, v, __) => Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-              colors: [Color(0xFFF7FBFF), Color(0xFFEEF6FD)]),
-          border: Border.all(color: _sBorder),
-          borderRadius: BorderRadius.circular(13),
-        ),
-        child: Text(v.text.isEmpty ? '-' : v.text,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            style: TextStyle(
-                fontSize: size,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 3,
-                color: _sNavy,
-                fontFamily: 'Consolas',
-                fontFamilyFallback: const ['Courier New'])),
-      ),
+      builder: (_, v, __) {
+        anetDiag(
+            'BIGVALUE size=$size len=${v.text.length} empty=${v.text.isEmpty} text=[${v.text}]');
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+                colors: [Color(0xFFF7FBFF), Color(0xFFEEF6FD)]),
+            border: Border.all(color: _sBorder),
+            borderRadius: BorderRadius.circular(13),
+          ),
+          child: LayoutBuilder(builder: (_, cons) {
+            anetDiag('BIGVALUE-BOX cons=$cons');
+            return Text(v.text.isEmpty ? '-' : v.text,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                style: TextStyle(
+                    fontSize: size,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 3,
+                    color: _sNavy,
+                    fontFamily: 'Consolas',
+                    fontFamilyFallback: const ['Courier New']));
+          }),
+        );
+      },
     );
   }
 }
