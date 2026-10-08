@@ -900,27 +900,33 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _sPill(),
+          _anetProbe('pill', _sPill()),
           const SizedBox(height: 12),
-          const Text('Ninguém entra na tua máquina sem a tua liberação.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12.5, color: _sMuted)),
+          _anetProbe(
+              'muted1',
+              const Text('Ninguém entra na tua máquina sem a tua liberação.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12.5, color: _sMuted))),
           const SizedBox(height: 18),
-          const Text('SEU CÓDIGO DE ATENDIMENTO',
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.1,
-                  color: _sPrimary)),
+          _anetProbe(
+              'lbl-codigo',
+              const Text('SEU CÓDIGO DE ATENDIMENTO',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.1,
+                      color: _sPrimary))),
           const SizedBox(height: 8),
-          _sBigValue(model.serverId, 30),
+          _anetProbe('valor-id', _sBigValue(model.serverId, 30)),
           const SizedBox(height: 8),
-          const Text(
-              'Mande este código para o suporte da Sisnetsul. É só disso que o técnico precisa.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 11.5, color: _sMuted)),
+          _anetProbe(
+              'muted2',
+              const Text(
+                  'Mande este código para o suporte da Sisnetsul. É só disso que o técnico precisa.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 11.5, color: _sMuted))),
           const SizedBox(height: 14),
-          Container(height: 1, color: const Color(0xFFEDF3F9)),
+          _anetProbe('divisor',const Divider(height: 1, thickness: 1, color: Color(0xFFEDF3F9))),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -946,7 +952,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
             ],
           ),
           const SizedBox(height: 6),
-          _sBigValue(model.serverPasswd, 22),
+          _anetProbe('valor-pwd', _sBigValue(model.serverPasswd, 22)),
           const SizedBox(height: 12),
           const _SisnetApproveCheckbox(),
           const SizedBox(height: 8),
@@ -955,9 +961,12 @@ class _DesktopHomePageState extends State<DesktopHomePage>
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 11, color: _sMuted)),
           const SizedBox(height: 14),
-          SizedBox(
-            height: 42,
-            child: ElevatedButton.icon(
+          _anetProbe(
+              'btn-copiar',
+              SizedBox(
+                  width: double.infinity,
+                  height: 42,
+                  child: ElevatedButton.icon(
               onPressed: () {
                 Clipboard.setData(
                     ClipboardData(text: gFFI.serverModel.serverId.text));
@@ -970,10 +979,10 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                   backgroundColor: _sPrimary,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(9))),
-            ),
-          ),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(9))),
+                  )),
+                  ),
           const SizedBox(height: 9),
           Row(
             children: [
@@ -1014,10 +1023,12 @@ class _DesktopHomePageState extends State<DesktopHomePage>
             ],
           ),
           const SizedBox(height: 14),
-          const Text(
-              'Atendimento oficial Sisnetsul · CNPJ 21.315.275/0001-94 · sisnetsul.com.br',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 10.5, color: _sMuted)),
+          _anetProbe(
+              'rodape',
+              const Text(
+                  'Atendimento oficial Sisnetsul · CNPJ 21.315.275/0001-94 · sisnetsul.com.br',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 10.5, color: _sMuted))),
           const SizedBox(height: 6),
         ],
       ),
@@ -1059,6 +1070,21 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         ),
       );
     });
+  }
+
+  Widget _anetProbe(String nome, Widget child) {
+    final k = GlobalKey();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ro = k.currentContext?.findRenderObject();
+      if (ro is RenderBox && ro.hasSize) {
+        final o = ro.localToGlobal(Offset.zero);
+        anetDiag(
+            'PROBE $nome w=${ro.size.width.toStringAsFixed(0)} h=${ro.size.height.toStringAsFixed(0)} x=${o.dx.toStringAsFixed(0)} y=${o.dy.toStringAsFixed(0)} paint=${ro.debugNeedsPaint.toString()}');
+      } else {
+        anetDiag('PROBE $nome SEM RENDERBOX');
+      }
+    });
+    return KeyedSubtree(key: k, child: child);
   }
 
   Widget _sBigValue(TextEditingController c, double size) {
