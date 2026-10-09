@@ -926,7 +926,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 11.5, color: _sMuted))),
           const SizedBox(height: 14),
-          _anetProbe('divisor',const Divider(height: 1, thickness: 1, color: Color(0xFFEDF3F9))),
+          _anetProbe('divisor', Container(height: 1, color: const Color(0xFFEDF3F9))),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -966,15 +966,21 @@ class _DesktopHomePageState extends State<DesktopHomePage>
               SizedBox(
                   width: double.infinity,
                   height: 42,
-                  child: ElevatedButton.icon(
+                  child: ElevatedButton(
               onPressed: () {
                 Clipboard.setData(
                     ClipboardData(text: gFFI.serverModel.serverId.text));
                 showToast('Código copiado');
               },
-              icon: const Icon(Icons.copy, size: 16),
-              label: const Text('Copiar meu código',
-                  style: TextStyle(fontWeight: FontWeight.w700)),
+              child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.copy, size: 16),
+                    SizedBox(width: 6),
+                    Text('Copiar meu código',
+                        style: TextStyle(fontWeight: FontWeight.w700)),
+                  ]),
               style: ElevatedButton.styleFrom(
                   backgroundColor: _sPrimary,
                   foregroundColor: Colors.white,
@@ -1072,48 +1078,29 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     });
   }
 
-  Widget _anetProbe(String nome, Widget child) {
-    final k = GlobalKey();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final ro = k.currentContext?.findRenderObject();
-      if (ro is RenderBox && ro.hasSize) {
-        final o = ro.localToGlobal(Offset.zero);
-        anetDiag(
-            'PROBE $nome w=${ro.size.width.toStringAsFixed(0)} h=${ro.size.height.toStringAsFixed(0)} x=${o.dx.toStringAsFixed(0)} y=${o.dy.toStringAsFixed(0)} paint=${ro.debugNeedsPaint.toString()}');
-      } else {
-        anetDiag('PROBE $nome SEM RENDERBOX');
-      }
-    });
-    return KeyedSubtree(key: k, child: child);
-  }
+  // v17: sem embrulho de sonda — o diagnostico fica nos anetDiag() internos.
+  Widget _anetProbe(String nome, Widget child) => child;
 
   Widget _sBigValue(TextEditingController c, double size) {
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: c,
       builder: (_, v, __) {
-        anetDiag(
-            'BIGVALUE size=$size len=${v.text.length} empty=${v.text.isEmpty} text=[${v.text}]');
+        final txt = v.text.trim().isEmpty ? '-' : v.text.trim();
+        anetDiag('BIGVALUE size=$size len=${v.text.length} text=[${v.text}]');
         return Container(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-                colors: [Color(0xFFF7FBFF), Color(0xFFEEF6FD)]),
+            color: const Color(0xFFF2F8FE),
             border: Border.all(color: _sBorder),
             borderRadius: BorderRadius.circular(13),
           ),
-          child: LayoutBuilder(builder: (_, cons) {
-            anetDiag('BIGVALUE-BOX cons=$cons');
-            return Text(v.text.isEmpty ? '-' : v.text,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                style: TextStyle(
-                    fontSize: size,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 3,
-                    color: _sNavy,
-                    fontFamily: 'Consolas',
-                    fontFamilyFallback: const ['Courier New']));
-          }),
+          child: Text(
+            txt,
+            textAlign: TextAlign.center,
+            softWrap: true,
+            style: TextStyle(
+                fontSize: size, fontWeight: FontWeight.w600, color: _sNavy),
+          ),
         );
       },
     );
