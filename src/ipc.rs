@@ -1840,32 +1840,20 @@ pub fn get_id() -> String {
     // config scope that has no id yet (e.g. a user GUI that became the server
     // while the installed service was restarting). Treat it as no answer,
     // otherwise the empty id is adopted below and wipes the local one.
-    let local = Config::get_id();
-    let ipc = get_config("id").ok().flatten();
-    if let Some(v) = ipc.as_ref() {
+    if let Ok(Some(v)) = get_config("id") {
         if !v.is_empty() {
             // update salt also, so that next time reinstallation not causing first-time auto-login failure
             if let Ok(Some(v2)) = get_config("salt") {
                 Config::set_salt(&v2);
             }
-            if *v != local {
+            if v != Config::get_id() {
                 Config::set_key_confirmed(false);
-                Config::set_id(v);
+                Config::set_id(&v);
             }
-            log::info!(
-                "[anet-diag] get_id via IPC len={} local_len={}",
-                v.len(),
-                local.len()
-            );
-            return v.clone();
+            return v;
         }
     }
-    log::info!(
-        "[anet-diag] get_id fallback local ipc_none={} local_len={}",
-        ipc.is_none(),
-        local.len()
-    );
-    local
+    Config::get_id()
 }
 
 pub async fn get_rendezvous_server(ms_timeout: u64) -> (String, Vec<String>) {

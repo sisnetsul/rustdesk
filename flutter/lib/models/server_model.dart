@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_hbb/anet_diag.dart';
 import 'package:flutter_hbb/consts.dart';
 import 'package:flutter_hbb/main.dart';
 import 'package:flutter_hbb/mobile/pages/settings_page.dart';
@@ -226,8 +225,6 @@ class ServerModel with ChangeNotifier {
   updatePasswordModel() async {
     var update = false;
     final temporaryPassword = await bind.mainGetTemporaryPassword();
-    anetDiag(
-        'PW ffi=[$temporaryPassword] len=${temporaryPassword.length} ctrl=[${_serverPasswd.text}]');
     final verificationMethod =
         await bind.mainGetOption(key: kOptionVerificationMethod);
     final temporaryPasswordLength =
@@ -257,11 +254,9 @@ class ServerModel with ChangeNotifier {
       if (_serverPasswd.text != temporaryPassword &&
           temporaryPassword.isNotEmpty) {
         _serverPasswd.text = temporaryPassword;
-        anetDiag('PW-SET ctrl=[${_serverPasswd.text}]');
       }
     }
     if (oldPwdText != _serverPasswd.text) {
-      anetDiag('PW-DIFF old=[$oldPwdText] new=[${_serverPasswd.text}]');
       update = true;
     }
     if (_verificationMethod != verificationMethod) {
@@ -460,11 +455,8 @@ class ServerModel with ChangeNotifier {
 
   fetchID() async {
     final id = await bind.mainGetMyId();
-    anetDiag(
-        'FETCHID ffi=[$id] ffiLen=${id.length} ctrl=[${_serverId.text}] ctrlId=[${_serverId.id}]');
     if (id != _serverId.id) {
       _serverId.id = id;
-      anetDiag('FETCHID-SET ctrl=[${_serverId.text}]');
       notifyListeners();
     }
   }
