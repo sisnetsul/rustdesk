@@ -211,7 +211,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          translate("ID"),
+                          'SEU CÓDIGO DE ATENDIMENTO',
                           style: TextStyle(
                               fontSize: 14,
                               color: Theme.of(context)
@@ -239,7 +239,9 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                           contentPadding: EdgeInsets.only(top: 10, bottom: 10),
                         ),
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1.2,
                         ),
                       ).workaroundFreezeLinuxMint(),
                     ),
@@ -312,7 +314,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AutoSizeText(
-                    translate("One-time Password"),
+                    'SENHA TEMPORÁRIA',
                     style: TextStyle(
                         fontSize: 14, color: textColor?.withOpacity(0.5)),
                     maxLines: 1,
@@ -336,7 +338,10 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                               contentPadding:
                                   EdgeInsets.only(top: 14, bottom: 10),
                             ),
-                            style: TextStyle(fontSize: 15),
+                            style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 1.2),
                           ).workaroundFreezeLinuxMint(),
                         ),
                       ),
@@ -1124,3 +1129,4 @@ void setPasswordDialog({VoidCallback? notEmptyCallback}) async {
     );
   });
 }
+
