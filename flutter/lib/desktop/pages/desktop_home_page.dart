@@ -78,6 +78,13 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   Widget buildLeftPane(BuildContext context) {
     final isIncomingOnly = bind.isIncomingOnly();
     final isOutgoingOnly = bind.isOutgoingOnly();
+    if (isIncomingOnly) {
+      // SisnetAssist recebe-only: painel proprio (design aprovado v6)
+      return ChangeNotifierProvider.value(
+        value: gFFI.serverModel,
+        child: buildSisnetClientPane(context),
+      );
+    }
     final children = <Widget>[
       if (!isOutgoingOnly) buildPresetPasswordWarning(),
       if (bind.isCustomClient())
@@ -111,25 +118,11 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         },
       ),
     ];
-    if (isIncomingOnly) {
-      children.addAll([
-        Divider(),
-        OnlineStatusWidget(
-          onSvcStatusChanged: () {
-            if (isInHomePage()) {
-              Future.delayed(Duration(milliseconds: 300), () {
-                _updateWindowSize();
-              });
-            }
-          },
-        ).marginOnly(bottom: 6, right: 6)
-      ]);
-    }
     final textColor = Theme.of(context).textTheme.titleLarge?.color;
     return ChangeNotifierProvider.value(
       value: gFFI.serverModel,
       child: Container(
-        width: isIncomingOnly ? 280.0 : 200.0,
+        width: isIncomingOnly ? 380.0 : 200.0,
         color: Theme.of(context).colorScheme.background,
         child: Stack(
           children: [
@@ -890,6 +883,224 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       shouldBeBlocked(_block, canBeBlocked);
     }
   }
+  // ---------- SisnetAssist: painel do cliente (receive-only) — design v6 ----------
+  static const _sPrimary = Color(0xFF0085C6);
+  static const _sNavy = Color(0xFF01174F);
+  static const _sMuted = Color(0xFF637789);
+  static const _sBorder = Color(0xFFD7E6F3);
+
+  Widget buildSisnetClientPane(BuildContext context) {
+    final model = gFFI.serverModel;
+    return SingleChildScrollView(
+      controller: _leftPaneScrollController,
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _anetProbe('pill', _sPill()),
+          const SizedBox(height: 12),
+          _anetProbe(
+              'muted1',
+              const Text('Ninguém entra na tua máquina sem a tua liberação.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12.5, color: _sMuted))),
+          const SizedBox(height: 18),
+          _anetProbe(
+              'lbl-codigo',
+              const Text('SEU CÓDIGO DE ATENDIMENTO',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.1,
+                      color: _sPrimary))),
+          const SizedBox(height: 8),
+          _anetProbe('valor-id', _sBigValue(model.serverId, 30)),
+          const SizedBox(height: 8),
+          _anetProbe(
+              'muted2',
+              const Text(
+                  'Mande este código para o suporte da Sisnetsul. É só disso que o técnico precisa.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 11.5, color: _sMuted))),
+          const SizedBox(height: 14),
+          _anetProbe('divisor', Container(height: 1, color: const Color(0xFFEDF3F9))),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Expanded(
+                child: Text('SENHA TEMPORÁRIA',
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.1,
+                        color: _sPrimary)),
+              ),
+              InkWell(
+                onTap: () => bind.mainUpdateTemporaryPassword(),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  child: Text('atualizar',
+                      style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                          color: _sPrimary)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          _anetProbe('valor-pwd', _sBigValue(model.serverPasswd, 22)),
+          const SizedBox(height: 12),
+          const _SisnetApproveCheckbox(),
+          const SizedBox(height: 8),
+          const Text(
+              'A sessão encerra sozinha e o atendimento fica registrado (LGPD).',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 11, color: _sMuted)),
+          const SizedBox(height: 14),
+          _anetProbe(
+              'btn-copiar',
+              SizedBox(
+                  width: double.infinity,
+                  height: 42,
+                  child: ElevatedButton(
+              onPressed: () {
+                Clipboard.setData(
+                    ClipboardData(text: gFFI.serverModel.serverId.text));
+                showToast('Código copiado');
+              },
+              child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.copy, size: 16),
+                    SizedBox(width: 6),
+                    Text('Copiar meu código',
+                        style: TextStyle(fontWeight: FontWeight.w700)),
+                  ]),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: _sPrimary,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(9))),
+                  )),
+                  ),
+          const SizedBox(height: 9),
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 38,
+                  child: ElevatedButton(
+                    onPressed: () => bind.mainUpdateTemporaryPassword(),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE0F2FF),
+                        foregroundColor: _sNavy,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(9))),
+                    child: const Text('Atualizar senha',
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: SizedBox(
+                  height: 38,
+                  child: OutlinedButton(
+                    onPressed: () => exit(0),
+                    style: OutlinedButton.styleFrom(
+                        foregroundColor: _sNavy,
+                        side: const BorderSide(color: Color(0xFFCBD8E6)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(9))),
+                    child: const Text('Encerrar',
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _anetProbe(
+              'rodape',
+              const Text(
+                  'Atendimento oficial Sisnetsul · CNPJ 21.315.275/0001-94 · sisnetsul.com.br',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 10.5, color: _sMuted))),
+          const SizedBox(height: 6),
+        ],
+      ),
+    );
+  }
+
+  Widget _sPill() {
+    return Obx(() {
+      final st = stateGlobal.svcStatus.value;
+      final ready = st == SvcStatus.ready;
+      final connecting = st == SvcStatus.connecting;
+      final txt = ready
+          ? 'Pronto para conectar — conexão segura'
+          : connecting
+              ? 'Conectando ao serviço…'
+              : 'Serviço parado';
+      final bg = ready ? const Color(0xFFECF8EF) : const Color(0xFFFDF3E7);
+      final fg = ready ? const Color(0xFF2C6B39) : const Color(0xFF8A5A12);
+      final dot = ready ? const Color(0xFF50A557) : const Color(0xFFD98A2B);
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration:
+            BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(color: dot, shape: BoxShape.circle)),
+            const SizedBox(width: 7),
+            Flexible(
+              child: Text(txt,
+                  style: TextStyle(
+                      fontSize: 11.5, fontWeight: FontWeight.w700, color: fg)),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  // v17: sem embrulho de sonda — o diagnostico fica nos anetDiag() internos.
+  Widget _anetProbe(String nome, Widget child) => child;
+
+  Widget _sBigValue(TextEditingController c, double size) {
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: c,
+      builder: (_, v, __) {
+        final txt = v.text.trim().isEmpty ? '-' : v.text.trim();
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF2F8FE),
+            border: Border.all(color: _sBorder),
+            borderRadius: BorderRadius.circular(13),
+          ),
+          child: Text(
+            txt,
+            textAlign: TextAlign.center,
+            softWrap: true,
+            style: TextStyle(
+                fontSize: size, fontWeight: FontWeight.w600, color: _sNavy),
+          ),
+        );
+      },
+    );
+  }
 }
 
 void setPasswordDialog({VoidCallback? notEmptyCallback}) async {
@@ -1128,5 +1339,49 @@ void setPasswordDialog({VoidCallback? notEmptyCallback}) async {
       onCancel: close,
     );
   });
+
+
+}
+
+class _SisnetApproveCheckbox extends StatefulWidget {
+  const _SisnetApproveCheckbox({Key? key}) : super(key: key);
+
+  @override
+  State<_SisnetApproveCheckbox> createState() => _SisnetApproveCheckboxState();
+}
+
+class _SisnetApproveCheckboxState extends State<_SisnetApproveCheckbox> {
+  bool? _on;
+
+  @override
+  Widget build(BuildContext context) {
+    // Cliente custom: o padrao efetivo e 'password-click' (aprovacao na tela),
+    // mas o valor bruto da opcao pode estar vazio -> usar o fallback do tema.
+    final bruto = gFFI.serverModel.approveMode;
+    final m = bruto.isEmpty ? defaultOptionApproveMode : bruto;
+    _on ??= (m == 'click' || m == 'password-click');
+    return InkWell(
+      onTap: () => _toggle(!(_on ?? false)),
+      child: Row(
+        children: [
+          Checkbox(
+            value: _on,
+            activeColor: const Color(0xFF0085C6),
+            visualDensity: VisualDensity.compact,
+            onChanged: (v) => _toggle(v ?? false),
+          ),
+          const Expanded(
+            child: Text('Autorizar acesso somente quando eu aprovar na tela',
+                style: TextStyle(fontSize: 12, color: Color(0xFF1B2B44))),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _toggle(bool v) {
+    setState(() => _on = v);
+    gFFI.serverModel.setApproveMode(v ? 'password-click' : 'password');
+  }
 }
 
