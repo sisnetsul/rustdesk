@@ -34,6 +34,9 @@ class DesktopHomePage extends StatefulWidget {
 
 const borderColor = Color(0xFF2F65BA);
 
+// SisnetAssist v22: trava propria de "somente recebe" (nao depender do binding da UI)
+const kSisnetReceiveOnly = true;
+
 class _DesktopHomePageState extends State<DesktopHomePage>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
   final _leftPaneScrollController = ScrollController();
@@ -58,7 +61,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final isIncomingOnly = bind.isIncomingOnly();
+    final isIncomingOnly = kSisnetReceiveOnly || bind.isIncomingOnly();
     return _buildBlock(
         child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,13 +79,17 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   }
 
   Widget buildLeftPane(BuildContext context) {
-    final isIncomingOnly = bind.isIncomingOnly();
+    final isIncomingOnly = kSisnetReceiveOnly || bind.isIncomingOnly();
     final isOutgoingOnly = bind.isOutgoingOnly();
     if (isIncomingOnly) {
       // SisnetAssist recebe-only: painel proprio (design aprovado v6)
       return ChangeNotifierProvider.value(
         value: gFFI.serverModel,
-        child: buildSisnetClientPane(context),
+        child: Container(
+          width: 380.0,
+          color: Theme.of(context).colorScheme.background,
+          child: buildSisnetClientPane(context),
+        ),
       );
     }
     final children = <Widget>[
