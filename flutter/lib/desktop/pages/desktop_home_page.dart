@@ -914,7 +914,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                       letterSpacing: 1.1,
                       color: _sPrimary))),
           const SizedBox(height: 8),
-          _anetProbe('valor-id', _sBigValue(model.serverId, 30)),
+          _anetProbe('valor-id', _sBigValue(() => model.serverId, 30)),
           const SizedBox(height: 8),
           _anetProbe(
               'muted2',
@@ -949,7 +949,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
             ],
           ),
           const SizedBox(height: 6),
-          _anetProbe('valor-pwd', _sBigValue(model.serverPasswd, 22)),
+          _anetProbe('valor-pwd', _sBigValue(() => model.serverPasswd, 22)),
           const SizedBox(height: 12),
           const _SisnetApproveCheckbox(),
           const SizedBox(height: 8),
@@ -1078,11 +1078,15 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   // v17: sem embrulho de sonda — o diagnostico fica nos anetDiag() internos.
   Widget _anetProbe(String nome, Widget child) => child;
 
-  Widget _sBigValue(TextEditingController c, double size) {
-    return ValueListenableBuilder<TextEditingValue>(
-      valueListenable: c,
-      builder: (_, v, __) {
-        final txt = v.text.trim().isEmpty ? '-' : v.text.trim();
+  Widget _sBigValue(TextEditingController Function() pick, double size) {
+    // v21: le o controlador ATUAL do modelo a cada notifyListeners().
+    // No v20 a instancia era capturada no build; como o ServerModel troca o
+    // controlador (_serverId = IDTextEditingController(...)), o builder ficava
+    // preso no antigo e o valor saia vazio (ou '-') no painel.
+    return Consumer<ServerModel>(
+      builder: (_, model, __) {
+        final c = pick();
+        final txt = c.text.trim().isEmpty ? '-' : c.text.trim();
         return Container(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           decoration: BoxDecoration(
