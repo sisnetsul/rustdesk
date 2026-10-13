@@ -57,6 +57,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
   final RxBool _block = false.obs;
 
   final GlobalKey _childKey = GlobalKey();
+  bool _sisnetPaneSized = false; // v25: janela em retrato (uma vez)
 
   @override
   Widget build(BuildContext context) {
@@ -83,13 +84,25 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     final isOutgoingOnly = bind.isOutgoingOnly();
     if (isIncomingOnly) {
       // SisnetAssist recebe-only: painel proprio (design aprovado v6)
+      if (!_sisnetPaneSized) {
+        _sisnetPaneSized = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          // v25: o Rust abre a janela em 800x600; aqui forcamos o retrato do cliente
+          try {
+            await windowManager.setSize(const Size(400, 700));
+            await windowManager.setAlignment(Alignment.center);
+          } catch (e) {
+            debugPrint('sisnet setSize: $e');
+          }
+        });
+      }
       return ChangeNotifierProvider.value(
         value: gFFI.serverModel,
         child: Theme(
           // v24: identidade clara fixa (nao herdar tema escuro do Windows)
           data: MyTheme.lightTheme,
           child: Container(
-            width: 380.0,
+            width: 400.0,
             color: _sPaneBg,
             child: buildSisnetClientPane(context),
           ),
