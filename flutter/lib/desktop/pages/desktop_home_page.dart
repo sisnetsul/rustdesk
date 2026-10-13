@@ -1017,11 +1017,12 @@ class _DesktopHomePageState extends State<DesktopHomePage>
               Expanded(
                 child: SizedBox(
                   height: 38,
-                  child: OutlinedButton(
+                  child: ElevatedButton(
                     onPressed: () => exit(0),
-                    style: OutlinedButton.styleFrom(
-                        foregroundColor: _sNavy,
-                        side: const BorderSide(color: Color(0xFFCBD8E6)),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFB3261E),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(9))),
                     child: const Text('Encerrar',
