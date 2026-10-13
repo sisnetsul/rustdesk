@@ -85,10 +85,14 @@ class _DesktopHomePageState extends State<DesktopHomePage>
       // SisnetAssist recebe-only: painel proprio (design aprovado v6)
       return ChangeNotifierProvider.value(
         value: gFFI.serverModel,
-        child: Container(
-          width: 380.0,
-          color: Theme.of(context).colorScheme.background,
-          child: buildSisnetClientPane(context),
+        child: Theme(
+          // v24: identidade clara fixa (nao herdar tema escuro do Windows)
+          data: MyTheme.lightTheme,
+          child: Container(
+            width: 380.0,
+            color: _sPaneBg,
+            child: buildSisnetClientPane(context),
+          ),
         ),
       );
     }
@@ -891,10 +895,11 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     }
   }
   // ---------- SisnetAssist: painel do cliente (receive-only) — design v6 ----------
-  static const _sPrimary = Color(0xFF0085C6);
-  static const _sNavy = Color(0xFF01174F);
-  static const _sMuted = Color(0xFF637789);
-  static const _sBorder = Color(0xFFD7E6F3);
+  static const _sPrimary = Color(0xFF0E8EE9); // azul TeamViewer-like
+  static const _sNavy = Color(0xFF0B2447);
+  static const _sMuted = Color(0xFF6B7C93);
+  static const _sBorder = Color(0xFFD9E7F5);
+  static const _sPaneBg = Color(0xFFF7FAFE); // fundo claro do painel
 
   Widget buildSisnetClientPane(BuildContext context) {
     final model = gFFI.serverModel;
@@ -930,7 +935,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 11.5, color: _sMuted))),
           const SizedBox(height: 14),
-          _anetProbe('divisor', Container(height: 1, color: const Color(0xFFEDF3F9))),
+          _anetProbe('divisor', Container(height: 1, color: const Color(0xFFE6EEF7))),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -969,7 +974,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
               'btn-copiar',
               SizedBox(
                   width: double.infinity,
-                  height: 42,
+                  height: 46,
                   child: ElevatedButton(
               onPressed: () {
                 Clipboard.setData(
@@ -1002,7 +1007,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                   child: ElevatedButton(
                     onPressed: () => bind.mainUpdateTemporaryPassword(),
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE0F2FF),
+                        backgroundColor: const Color(0xFFE8F4FE),
                         foregroundColor: _sNavy,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -1020,7 +1025,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                   child: ElevatedButton(
                     onPressed: () => exit(0),
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFB3261E),
+                        backgroundColor: const Color(0xFFD93025),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -1098,7 +1103,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         return Container(
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFFF2F8FE),
+            color: Colors.white,
             border: Border.all(color: _sBorder),
             borderRadius: BorderRadius.circular(13),
           ),
@@ -1378,13 +1383,13 @@ class _SisnetApproveCheckboxState extends State<_SisnetApproveCheckbox> {
         children: [
           Checkbox(
             value: _on,
-            activeColor: const Color(0xFF0085C6),
+            activeColor: const Color(0xFF0E8EE9),
             visualDensity: VisualDensity.compact,
             onChanged: (v) => _toggle(v ?? false),
           ),
           const Expanded(
             child: Text('Autorizar acesso somente quando eu aprovar na tela',
-                style: TextStyle(fontSize: 12, color: Color(0xFF1B2B44))),
+                style: TextStyle(fontSize: 12, color: Color(0xFF0B2447))),
           ),
         ],
       ),
