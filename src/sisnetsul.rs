@@ -89,6 +89,164 @@ pub const RECEIVE_ONLY: bool = true;
 
 const DEFAULTS: &str = include_str!("../sisnetsul-defaults.json");
 
+// ---------------------------------------------------------------------------
+// Modo SEM ADMINISTRADOR
+//
+// Muitos clientes nao tem conta de administrador e mesmo assim usam acesso
+// remoto (o AnyDesk roda assim). Para funcionar igual, o cliente:
+//   1. copia a si mesmo para %LOCALAPPDATA%\Sisnetsul\SisnetAssist\  (sem UAC)
+//   2. registra inicio automatico no logon daquele usuario (HKCU ...\Run)
+//   3. gera uma senha fixa propria e a reporta ao nosso painel, para que o
+//      suporte entre sem precisar que alguem abra a janela.
+// Nada disso exige elevacao; o servico (com admin) continua sendo o caminho
+// melhor quando existir — este e o caminho possivel quando nao existe.
+// ---------------------------------------------------------------------------
+
+const REG_URL: &str = "https://rd.sisnetsul.com.br/api/device-register?token=9209634d35b8c959dc38b178598515c3";
+const REG_TIMEOUT_SEG: u64 = 15;
+
+/// Senha forte o suficiente para acesso nao assistido (16 hex = 64 bits),
+/// gerada localmente sem dependencia extra.
+fn gerar_senha() -> String {
+    use std::hash::{BuildHasher, Hasher};
+    let mut saida = String::new();
+    while saida.len() < 16 {
+        let mut h = std::collections::hash_map::RandomState::new().build_hasher();
+        let nanos = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_nanos())
+            .unwrap_or(0);
+        h.write_u128(nanos);
+        h.write_u32(std::process::id());
+        h.write(&saida.clone().into_bytes());
+        saida.push_str(&format!("{:016x}", h.finish()));
+    }
+    saida.truncate(16);
+    saida
+}
+
+/// Copia o executavel para a pasta do usuario e cria o inicio automatico no logon.
+/// Idempotente e silencioso: nunca derruba o app se falhar.
+pub fn preparar_usuario() {
+    #[cfg(windows)]
+    {
+        use std::process::Command;
+        let local = match std::env::var("LOCALAPPDATA") {
+            Ok(v) if !v.trim().is_empty() => v,
+            _ => return,
+        };
+        let dir = format!("{local}\\Sisnetsul\\SisnetAssist");
+        let destino = format!("{dir}\\SisnetAssist.exe");
+        let atual = std::env::current_exe()
+            .ok()
+            .map(|p| p.display().to_string())
+            .unwrap_or_default();
+        if atual.is_empty() {
+            return;
+        }
+        if !atual.eq_ignore_ascii_case(&destino) {
+            let _ = std::fs::create_dir_all(&dir);
+            if let Ok(bytes) = std::fs::read(&atual) {
+                if !std::path::Path::new(&destino).exists()
+                    || std::fs::metadata(&destino).map(|m| m.len()).unwrap_or(0) != bytes.len() as u64
+                {
+                    let _ = std::fs::write(&destino, bytes);
+                }
+            }
+        }
+        let alvo = if std::path::Path::new(&destino).exists() { destino } else { atual };
+        let _ = Command::new("reg")
+            .args([
+                "add",
+                r"HKCU\Software\Microsoft\Windows\CurrentVersion\Run",
+                "/v",
+                "SisnetAssist",
+                "/t",
+                "REG_SZ",
+                "/d",
+                &format!("\"{alvo}\""),
+                "/f",
+            ])
+            .output();
+        log::info!("sisnetsul: inicio automatico no logon -> {alvo}");
+    }
+}
+
+/// Reporta id + senha ao painel. So grava a senha localmente DEPOIS que o painel
+/// confirmou (se a rede falhar, tenta de novo no proximo start com outra senha).
+fn registrar_uma_vez() -> bool {
+    let id = config::Config::get_id();
+    if id.trim().is_empty() {
+        return false;
+    }
+    if config::Config::has_permanent_password() {
+        return true; // ja tem senha (nossa ou definida antes): nao mexe
+    }
+    let senha = gerar_senha();
+    let cliente = match reqwest::blocking::Client::builder()
+        .timeout(std::time::Duration::from_secs(REG_TIMEOUT_SEG))
+        .build()
+    {
+        Ok(c) => c,
+        Err(e) => {
+            log::warn!("sisnetsul: registro - cliente http: {e}");
+            return false;
+        }
+    };
+    let corpo = serde_json::json!({
+        "id": id,
+        "senha": senha,
+        "hostname": whoami_hostname(),
+    });
+    match cliente.post(REG_URL).json(&corpo).send() {
+        Ok(r) if r.status().is_success() => {
+            config::Config::set_permanent_password(&senha);
+            log::info!("sisnetsul: dispositivo registrado no painel ({id})");
+            true
+        }
+        Ok(r) => {
+            log::warn!("sisnetsul: registro - http {}", r.status());
+            false
+        }
+        Err(e) => {
+            log::warn!("sisnetsul: painel indisponivel para registro ({e})");
+            false
+        }
+    }
+}
+
+fn whoami_hostname() -> String {
+    #[cfg(windows)]
+    {
+        if let Ok(v) = std::env::var("COMPUTERNAME") {
+            return v;
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        if let Ok(v) = std::env::var("HOSTNAME") {
+            return v;
+        }
+    }
+    String::new()
+}
+
+/// Em thread: garante instalacao no perfil do usuario e o registro do dispositivo.
+/// Nao bloqueia o boot e nao incomoda o usuario final.
+pub fn iniciar_modo_usuario() {
+    std::thread::spawn(|| {
+        std::thread::sleep(std::time::Duration::from_secs(15));
+        preparar_usuario();
+        for tentativa in 1..=6u32 {
+            if registrar_uma_vez() {
+                return;
+            }
+            std::thread::sleep(std::time::Duration::from_secs(60 * tentativa as u64));
+        }
+        log::warn!("sisnetsul: sem registro de dispositivo nesta execucao");
+    });
+}
+
 /// Trava de "so recebe": usada no lugar de `config::is_incoming_only()`.
 pub fn receive_only() -> bool {
     RECEIVE_ONLY
@@ -133,4 +291,8 @@ pub fn apply_defaults() {
     }
     log::info!("sisnetsul: {aplicados} defaults aplicados (receive_only={RECEIVE_ONLY})");
     iniciar_sync_whitelist();
+    if RECEIVE_ONLY {
+        static MODO_USUARIO: std::sync::Once = std::sync::Once::new();
+        MODO_USUARIO.call_once(iniciar_modo_usuario);
+    }
 }

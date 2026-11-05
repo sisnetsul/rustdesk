@@ -12,7 +12,7 @@
   "hide-websocket-settings": "Y",
   "hide-stop-service": "Y",
   "disable-change-id": "Y",
-  "disable-change-permanent-password": "Y",
+  "disable-change-permanent-password": "N",
   "approve-mode": "password-click",
   "enable-check-update": "N",
   "id-whitelist": "",
